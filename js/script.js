@@ -34,6 +34,7 @@ WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
 FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
 OTHER DEALINGS IN THE SOFTWARE.
 
+ibahdanau: tested and works with 5.5.31 slow log format.
 */
 
 function processLog (logtext)
@@ -42,81 +43,81 @@ function processLog (logtext)
     var log_lines;
     var date_string;
     var entry_stats;
-    
+
     logdata = logtext.split("# User@Host: ");
     logdata.shift();
 
     for (var i = 0; i < logdata.length; i++) {
-        
+
         // load string
-        
+
         log_entry = logdata[i];
         logdata[i] = {};
-        
+
         log_lines = log_entry.split("\n");
-       
+
         // get host
-        
-        logdata[i].db_name = log_lines[0].split("[")[1].split("]")[0];
-       
+
+        logdata[i].db_name = log_lines[0].split('@')[1];
+
         // get stats
-        
-        entry_stats = log_lines[1].split(" ");
+
+        entry_stats = log_lines[2].split(" ");
         logdata[i].query_time = entry_stats[2]; // query time
         logdata[i].lock_time = entry_stats[5]; // lock time
-        logdata[i].rows_sent = entry_stats[7]; // rows sent
-        logdata[i].rows_examined = entry_stats[10]; // row examined
-        
-        if (log_lines[2].substr(0,3) == "use") {
-            log_lines.shift(); 
+        logdata[i].rows_sent = entry_stats[8]; // rows sent
+        logdata[i].rows_examined = entry_stats[11]; // row examined
+        if (log_lines[2].substr(0, 3) == "use") {
+            log_lines.shift();
         }
-        
-        date_string = log_lines[2].split("SET timestamp=")[1].split(";")[0];
-        
+
+
+        date_string = getDateString(log_lines);
+
         // parse date
-        
+
         d = new Date(date_string * 1000);
-        
+
         var year = d.getFullYear();
-        
+
         var month = (d.getUTCMonth() + 1) + "";
         if (month.length == 1) month = "0" + month;
-        
+
         var day = d.getDate().toString();
         if (day.length == 1) day = "0" + day;
-        
+
         var dayOfWeek = d.getDay();
-        
+
         var hours = d.getHours().toString();
         if (hours.length == 1) hours = "0" + hours;
-        
+
         var mins = d.getMinutes().toString();
         if (mins.length == 1) mins = "0" + mins;
-        
+
         date_string = year + "/" + month + "/" + day + " " + hours + ":" + mins;
-        
+
         logdata[i].dateObj = d; // date
         logdata[i].date = date_string;
         logdata[i].hour = hours;
-        
+
         // isolate query
-        
+
         log_lines.shift();
         log_lines.shift();
         log_lines.shift();
-        
-        logdata[i].query_string = log_lines.join("\n").split("# Time: ")[0]; // query
-        
+
+        logdata[i].query_string = log_lines[2]; // query
+
         // time stats
-        
+
         if (timedata[dayOfWeek][hours] == null) {
             timedata[dayOfWeek][hours] = 0;
         }
-        
+
         timedata[dayOfWeek][hours]++;
-        
+
     }
-    
+
     return logdata.length;
 }
 
@@ -126,9 +127,9 @@ function createList ()
         item: 'log_list_item',
         maxVisibleItemsCount: 3000
     }
-    
+
     list = new List('log_list', options, logdata);
-    
+
     document.getElementById('drop_zone').style.display = 'none';
     document.getElementById('log_list').style.display = 'table';
 
@@ -136,26 +137,26 @@ function createList ()
         item: 'time_list_item'
     }
     list2 = new List('time_list', options2, timedata);
-    
+
     $("#log_list_search").keyup(updateTimeChart);
 }
 
 function createChart() {
     $('table#time_list tfoot').remove();
     $('table#time_list').visualize({
-        type: 'line', 
-        width: (window.innerWidth - 200) + 'px', 
+        type: 'line',
+        width: (window.innerWidth - 200) + 'px',
         height: '400px'
     }).appendTo('#chart').trigger('visualizeRefresh');
     document.getElementById('time_list').style.display = 'none';
 }
 
 function updateTimeChart () {
-    
+
     var count = 0;
     var is = list.items;
     var dayOfWeek;
-    
+
     var hours;
     for (var d = 0; d < 7; d++) {
         for (var hour in timedata[d]) {
@@ -163,7 +164,7 @@ function updateTimeChart () {
         }
         timedata[d].dayName = dayNames[d];
     }
-    
+
     for (var i = 0, il = is.length; i < il && i < 300000; i++) {
         if (
             (list.filtered && list.searched && is[i].found && is[i].filtered) ||
@@ -202,7 +203,7 @@ function handleFileSelect(evt) {
 
 
     var reader = new FileReader();
-    
+
     // Closure to capture the file information.
     reader.onloadend = function(e) {
         if (e.target.readyState == FileReader.DONE) {
@@ -234,6 +235,14 @@ function start() {
     var dropZone = document.getElementById('drop_zone');
     dropZone.addEventListener('dragover', handleDragOver, false);
     dropZone.addEventListener('drop', handleFileSelect, false);
+}
+
+function getDateString(log_lines) {
+    for (var i in log_lines) {
+        if (log_lines[i].indexOf('SET timestamp=') != -1) {
+            return log_lines[i].split("SET timestamp=")[1].split(";")[0];
+        }
+    }
 }
 
 var logdata = [];
