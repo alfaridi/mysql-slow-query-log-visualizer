@@ -157,13 +157,13 @@ OTHER DEALINGS IN THE SOFTWARE.
                     </th>
                 </tr>
                 <tr>
-                    <th scope="col" class="sort" data-sort="date">date</th>
+                    <th colspan="2" scope="col" class="sort" data-sort="date">date</th>
                     <th scope="col" class="sort" data-sort="query_time">query time</th>
                     <th scope="col" class="sort" data-sort="lock_time">lock time</th>
                     <th scope="col" class="sort" data-sort="rows_sent">rows sent</th>
                     <th scope="col" class="sort" data-sort="rows_examined">rows examined</th>
                     <th scope="col" class="sort" data-sort="db_name">db name</th>
-                    <th colspan="4" scope="col" class="sort" data-sort="query_string">query string</th>
+                    <th colspan="8" scope="col" class="sort" data-sort="query_string">query string</th>
                 </tr>
             </thead>
 
@@ -171,13 +171,13 @@ OTHER DEALINGS IN THE SOFTWARE.
 
             <tfoot>
                 <tr id="log_list_item">
-                    <th scope="row" class="date"></th>
+                    <td colspan="2" scope="row" class="date"></th>
                     <td class="query_time"></td>
                     <td class="lock_time"></td>
                     <td class="rows_sent"></td>
                     <td class="rows_examined"></td>
                     <td class="db_name"></td>
-                    <td colspan="4" class="qs"><pre class="query_string"></pre></td>
+                    <td colspan="8" class="qs"><pre class="query_string"></pre></td>
                 </tr>
             </tfoot>
         </table>

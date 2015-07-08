@@ -81,8 +81,20 @@ thead th
     cursor: s-resize;
 }
 
+#log_list_item tr
+{
+	border-top-color: grey;
+	border-bottom-color: grey;
+}
+
+td
+{
+	vertical-align: text-top;
+}
+
 th
 {
+	vertical-align: text-top;
     text-align: left;
 }
 
@@ -93,12 +105,12 @@ tfoot
 
 #log_list td.qs
 {
-    overflow: hidden;
+    overflow-x: auto;
 }
 
 pre
 {
-    white-space: normal;
+    white-space: nowrap;
     color: #9cf;
     font-size: 11px;
     line-height: 16px;
