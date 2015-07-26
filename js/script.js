@@ -58,21 +58,27 @@ function processLog (logtext)
 
         // get host
 
-        logdata[i].db_name = log_lines[0].split('@')[1];
+        logdata[i].db_name = log_lines[0].split("[")[1].split("]")[0];
 
-        // get stats
-
-        entry_stats = log_lines[2].split(" ");
-        logdata[i].query_time = entry_stats[2]; // query time
-        logdata[i].lock_time = entry_stats[5]; // lock time
-        logdata[i].rows_sent = entry_stats[8]; // rows sent
-        logdata[i].rows_examined = entry_stats[11]; // row examined
-        if (log_lines[2].substr(0, 3) == "use") {
+        if (log_lines[2].substr(0,3) == "use") {
             log_lines.shift();
         }
 
+        for (var j = 0; j < log_lines.length; j++) {
+        	// get stats
+        	if (log_lines[j].substr(0, 13) == "# Query_time:") {
+        		entry_stats = log_lines[j].split(" ");
+				logdata[i].query_time = entry_stats[2]; // query time
+				logdata[i].lock_time = entry_stats[5]; // lock time
+				logdata[i].rows_sent = entry_stats[8]; // rows sent
+				logdata[i].rows_examined = entry_stats[11]; // row examined
+        	}
 
-        date_string = getDateString(log_lines);
+        	if (log_lines[j].substr(0, 14) == "SET timestamp=") {
+        		date_string = log_lines[j].split("SET timestamp=")[1].split(";")[0];
+        		continue;
+        	}
+        }
 
         // parse date
 
@@ -105,8 +111,9 @@ function processLog (logtext)
         log_lines.shift();
         log_lines.shift();
         log_lines.shift();
+        log_lines.shift();
 
-        logdata[i].query_string = log_lines[2]; // query
+        logdata[i].query_string = log_lines.join("\n").split("# Time:")[0]; // query
 
         // time stats
 
